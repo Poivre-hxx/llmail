@@ -3,106 +3,83 @@ import json
 import random
 import smtplib
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from email.mime.multipart import MIMEMultipart  
 from datetime import datetime
 from dotenv import load_dotenv
 import os
 import aisuite as ai
-import json
 
 # 导入 .env 中的信息
 load_dotenv('.env')
-OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY')
+OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY') 
 ANTHROPIC_API_KEY: str = os.getenv('ANTHROPIC_API_KEY')
-SENDER_ADDRESS: str = os.getenv('SENDER_ADDRESS')
-SENDER_PASS: str = os.getenv('SENDER_PASS')
-RECIPIENT_ADDRESS: str = os.getenv('RECIPIENT_ADDRESS')
-
-# 定义主题列表
-with open('theme.json', 'r', encoding='utf-8') as file:
-    data = json.load(file)
-topics = [theme['title'] for theme in data['themes']]
 
 # 初始化aisuite客户端
 client = ai.Client()
-# 调用 aisuite API 生成完整对话
-def call_api_to_generate_dialog(topic, dialog_length):
 
-    # 构造 API 请求数据
+def generate_game_prompt(user_prompt):
+    """根据用户输入的游戏idea,生成详实的游戏prompt"""
     messages = [
-        {"role": "system", "content": "你是一个对话生成器，负责生成自然且有趣的对话内容。"},
-        {
-            "role": "user",
-            "content":
-                       f"请你以两个中国男生日常聊天的场合生成6段聊天对话，主题：{topic}；对话长度为 {dialog_length} 句"
-                       f"这六段话需要尽可能保证场景不同，主题不同，情感不同，不要提供解决方案，可以是正向的结果的也可以是反向的结果，结尾不一定是happy ending, 但是不能走极端，可以只进行情感交流，增加一些负面情感。"
-                       f"用词请尽量日常，且对话用语自然，符合日常聊天，意见并不一定要统一"
-                       f"要求每句前有情绪提示词，以“A”“B”代指对话双方，情绪提示词请和对话语句位于同一行，紧跟放在“A”“B”的身份提示词之后"
-                       f"每段对话具体的主题由你决定"
-                       f"最后，需要在对话中引入情感聊天的内容，可以引起双方的情感共鸣"
-                       f"重点体现这些情绪：{'Anxiety', 'Alertness', 'Sadness', 'Pride','Disgust', 'Anger', 'Guilt', 'Fear','Offense', 'Contempt'}"
-                       f"请一定注意！在输出的时候把情绪此翻译成中文，格式上只保留每一段大标题，不要有其他的小标题，请一定注意！正文对话和对话不要有空行 参考格式如下：第一段：xxxxxxxx A【情绪】：xxxxxxxxxxxx B【情绪】：xxxxxxxxxxxx A【情绪】：xxxxxxxxxxxx B【情绪】：xxxxxxxxxxxx …… 谢谢您！"
-        }
+        {"role": "system", "content": "你是一个游戏设计师助手,负责根据用户提供的游戏idea,生成详实的游戏设计文档。"},
+        {"role": "user", "content": f"我的游戏idea是:{user_prompt},请你帮我丰富和填充这个idea,输出一个更加详实的游戏设计prompt。"}
     ]
-
-    try:
-        # 选择模型(可选择"openai:gpt-4o", "anthropic:claude-3-5-sonnet-20240620"等)
-        model = "anthropic:claude-3-5-sonnet-20240620"
-        # 调用API生成对话
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0.75,
-        )
-        if response.choices:
-            return response.choices[0].message.content.strip()
-        else:
-            return "（API调用失败，没有返回结果）"
-    except Exception as e:
-        return f"（API调用失败：{e}）"
-
-# 批量生成多个话题的对话并保存到文件
-def generate_all_dialogs(topics, dialog_length):
-    # 获取当前日期时间
-    timestamp = datetime.now().strftime("%m-%d-%H-%M")  # 文件名格式：月-日-时-分
-    filename = f"dialogs_{timestamp}.txt"
-
-    with open(filename, "w", encoding="utf-8") as file:
-        for idx, topic in enumerate(topics):
-            print(f"正在生成第 {idx + 1} 个话题：{topic} 的对话...")
-            dialog = call_api_to_generate_dialog(topic, dialog_length)
-            file.write(f"第{idx + 1}个话题：{topic}\n{dialog}\n\n")
-
-    print(f"所有对话已保存到文件：{filename}")
-    return filename
-
-
-# 使用 Gmail 发送邮件
-def sendMail(mail_content, recv_address):
-    message = MIMEMultipart()
-    message['From'] = SENDER_ADDRESS
-    message['To'] = recv_address
-    message['Subject'] = '自动生成的对话合集'  # 邮件主题
-    message.attach(MIMEText(mail_content, 'plain'))
     
-    try:
-        session = smtplib.SMTP('smtp.gmail.com', 587)
-        session.starttls()  # 启用 TLS 加密
-        session.login(SENDER_ADDRESS, SENDER_PASS)
-        session.sendmail(SENDER_ADDRESS, recv_address, message.as_string())
-        session.quit()
-        print(f"邮件发送成功！已发送到 {recv_address}")
-    except Exception as e:
-        print(f"邮件发送失败：{e}")
+    model = "Ollama:qwen2.5" 
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=0.7,
+    )
+    
+    if response.choices:
+        return response.choices[0].message.content.strip()
+    else:
+        return "游戏prompt生成失败,没有返回结果。"
 
-# 主函数
+def generate_game_code(game_prompt):
+    """根据详实的游戏prompt,生成对应的Python游戏代码"""
+    messages = [
+        {"role": "system", "content": "你是一个游戏开发工程师,负责根据游戏设计文档,编写对应的Python游戏代码。"},
+        {"role": "user", "content": f"游戏设计prompt:{game_prompt},请你根据这个prompt,用Python编写一个简单的游戏Demo。"}
+    ]
+    
+    model = "Ollama:qwen2.5"
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=0.2,
+    )
+    
+    if response.choices:
+        return response.choices[0].message.content.strip() 
+    else:
+        return "游戏代码生成失败,没有返回结果。"
+
+def main():
+    print("欢迎使用游戏生成器!")
+    
+    while True:
+        user_prompt = input("请输入您的游戏idea(输入q退出):")
+        if user_prompt.lower() == 'q':
+            print("感谢使用,再见!")
+            break
+        
+        print("正在根据您的idea生成详实的游戏prompt...")
+        game_prompt = generate_game_prompt(user_prompt)
+        print(f"生成的游戏prompt如下:\n{game_prompt}")
+        
+        satisfied = input("您对这个game_prompt满意吗?(y/n)")
+        if satisfied.lower() == 'y':
+            print("正在根据game_prompt生成Python游戏代码...")
+            game_code = generate_game_code(game_prompt)
+            print(f"生成的游戏代码如下:\n{game_code}")
+            
+            filename = f"game_{datetime.now().strftime('%m%d%H%M%S')}.py"
+            with open(filename, 'w') as f:
+                f.write(game_code)
+            print(f"游戏代码已保存至:{filename}")
+        else:
+            print("好的,让我们重新开始。")
+
 if __name__ == "__main__":
-    # 生成对话并保存
-    print("开始生成对话...")
-    filename = generate_all_dialogs(topics, 14)
-
-    # 读取文件内容并发送邮件
-    with open("filename", "r", encoding="utf-8") as file:
-        mail_content = file.read()
-    print("开始发送邮件...")
-    sendMail(mail_content, RECIPIENT_ADDRESS)
+    main()
