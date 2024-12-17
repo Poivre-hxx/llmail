@@ -1,5 +1,3 @@
-import requests
-import json
 from datetime import datetime
 from dotenv import load_dotenv
 import os
@@ -59,6 +57,7 @@ def generate_game_prompt(user_prompt):
         {"role": "system", "content": "你是一个游戏设计师助手,负责根据用户提供的游戏idea,丰富填充这个idea。"},
         {"role": "user", 
         "content": f"""
+            Game Idea: {user_prompt}
             1. 提供核心玩法和机制的清晰、简短描述（类似于经典迷你游戏规则）。
             2. 确保提示符已准备好 Python，重点关注游戏结构（例如，对象、控件、事件）。
             3. 包括简单易懂的定义的胜利和失败条件。
