@@ -69,15 +69,16 @@ def generate_game_prompt(user_prompt, use_claude=True):
     messages = [
         {"role": "system", "content": "You are a game design assistant. Help expand user's game ideas into detailed game design prompts."},
         {"role": "user", 
-        "content" = f"""
-        Game Idea: {user_prompt}
-        Expand this idea into a concise and focused game design prompt that follows these guidelines:
-        1. Provide a clear, brief description of the core gameplay and mechanics (similar to classic mini-game rules).
-        2. Ensure the prompt is Python-ready, focusing on the structure of the game (e.g., objects, controls, events).
-        3. Include defined win and lose conditions that are simple and easily understood.
-        4. Highlight classic gameplay elements such as scoring, levels, or challenges, while maintaining simplicity and playability.
-        5. Emphasize basic rules, controls, and interaction that can be translated directly into code.
-        """
+         "content" = f"""
+                    Game Idea: {user_prompt}
+                    Expand this idea into a concise and focused game design prompt that follows these guidelines:
+                    1. Provide a clear, brief description of the core gameplay and mechanics (similar to classic mini-game rules).
+                    2. Ensure the prompt is Python-ready, focusing on the structure of the game (e.g., objects, controls, events).
+                    3. Include defined win and lose conditions that are simple and easily understood.
+                    4. Highlight classic gameplay elements such as scoring, levels, or challenges, while maintaining simplicity and playability.
+                    5. Emphasize basic rules, controls, and interaction that can be translated directly into code.
+                    6. You only need to consider basic implementation, without having to consider issues such as sound effects, material textures, etc.
+                    """
         }
     ]
     

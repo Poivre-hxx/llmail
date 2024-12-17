@@ -116,7 +116,7 @@ def main():
             game_code = generate_game_code(game_prompt)
             print(f"生成的游戏代码如下:\n{game_code}")
             
-            filename = f"game_{datetime.now().strftime('%m%d%H%M%S')}.py"
+            filename = f"game_ollamacn_{datetime.now().strftime('%m%d%H%M%S')}.py"
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(game_code)
             print(f"游戏代码已保存至:{filename}")
