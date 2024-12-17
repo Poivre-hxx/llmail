@@ -67,6 +67,7 @@ def generate_game_prompt(user_prompt):
                     4. Highlight classic gameplay elements such as scoring, levels, or challenges, while maintaining simplicity and playability.
                     5. Emphasize basic rules, controls, and interaction that can be translated directly into code.
                     6. You only need to consider basic implementation, without having to consider issues such as sound effects, material textures, etc.
+                    7. Considering the limitation of token length, the more concise the better, and only retain the necessary functions of the game.
                     """
         }
     ]
@@ -86,7 +87,7 @@ def generate_game_code(game_prompt):
                     3. The game should be fully playable with clear start and end conditions (win/lose).
                     4. Visuals should be created using basic geometric shapes (e.g., triangles, circles, squares).
                     5. Include a game loop with event handling, and implement basic collision detection.
-                    6. Add comments to explain key functions and the game logic.
+                    6. Consider the libraries you use and make sure they are complete
                     """
         }
     ]                              

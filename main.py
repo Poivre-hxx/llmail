@@ -69,16 +69,16 @@ def generate_game_prompt(user_prompt, use_claude=True):
     messages = [
         {"role": "system", "content": "You are a game design assistant. Help expand user's game ideas into detailed game design prompts."},
         {"role": "user", 
-         "content" = f"""
-                    Game Idea: {user_prompt}
-                    Expand this idea into a concise and focused game design prompt that follows these guidelines:
-                    1. Provide a clear, brief description of the core gameplay and mechanics (similar to classic mini-game rules).
-                    2. Ensure the prompt is Python-ready, focusing on the structure of the game (e.g., objects, controls, events).
-                    3. Include defined win and lose conditions that are simple and easily understood.
-                    4. Highlight classic gameplay elements such as scoring, levels, or challenges, while maintaining simplicity and playability.
-                    5. Emphasize basic rules, controls, and interaction that can be translated directly into code.
-                    6. You only need to consider basic implementation, without having to consider issues such as sound effects, material textures, etc.
-                    """
+         "content": f"""Game Idea: {user_prompt}
+            Expand this idea into a concise and focused game design prompt that follows these guidelines:
+            1. Provide a clear, brief description of the core gameplay and mechanics (similar to classic mini-game rules).
+            2. Ensure the prompt is Python-ready, focusing on the structure of the game (e.g., objects, controls, events).
+            3. Include defined win and lose conditions that are simple and easily understood.
+            4. Highlight classic gameplay elements such as scoring, levels, or challenges, while maintaining simplicity and playability.
+            5. Emphasize basic rules, controls, and interaction that can be translated directly into code.
+            6. You only need to consider basic implementation, without having to consider issues such as sound effects, material textures, etc.
+            7. Considering the limitation of the length of the token, the more streamlined the better, keeping only the necessary features.
+            """
         }
     ]
     
@@ -94,16 +94,15 @@ def generate_game_code(game_prompt, use_claude=True):
     messages = [
         {"role": "system", "content": "You are a game development engineer who creates Python games based on design prompts."},
         {"role": "user", 
-         "content" = f"""
-                    Game Design Prompt: {game_prompt}
-                    Create a simple playable game demo in Python using Pygame with the following requirements:
-                    1. Screen resolution: 720x480 pixels.
-                    2. Use the Pygame library for all game functionalities.
-                    3. The game should be fully playable with clear start and end conditions (win/lose).
-                    4. Visuals should be created using basic geometric shapes (e.g., triangles, circles, squares).
-                    5. Include a game loop with event handling, and implement basic collision detection.
-                    6. Add comments to explain key functions and the game logic.
-                    """
+         "content": f"""Game Design Prompt: {game_prompt}
+                Create a simple playable game demo in Python using Pygame with the following requirements:
+                1. Screen resolution: 720x480 pixels.
+                2. Use the Pygame library for all game functionalities.
+                3. The game should be fully playable with clear start and end conditions (win/lose).
+                4. Visuals should be created using basic geometric shapes (e.g., triangles, circles, squares).
+                5. Include a game loop with event handling, and implement basic collision detection.
+                6. Consider the libraries you use and make sure they are complete
+                """
         }
     ]
     
