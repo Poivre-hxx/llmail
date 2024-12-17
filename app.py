@@ -1,21 +1,31 @@
 import requests
 import json
-import random
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart  
 from datetime import datetime
 from dotenv import load_dotenv
 import os
-import aisuite as ai
 
 # 导入 .env 中的信息
 load_dotenv('.env')
-OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY') 
-ANTHROPIC_API_KEY: str = os.getenv('ANTHROPIC_API_KEY')
 
-# 初始化aisuite客户端
-client = ai.Client()
+def call_ollama(messages, model="qwen:2.5", temperature=0.7):
+    """调用本地Ollama服务的通用函数"""
+    url = "http://localhost:11434/api/chat"
+    
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": temperature,
+        "stream": False
+    }
+    
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()  # 检查HTTP错误
+        result = response.json()
+        return result["message"]["content"]
+    except requests.exceptions.RequestException as e:
+        print(f"调用Ollama服务出错: {e}")
+        return None
 
 def generate_game_prompt(user_prompt):
     """根据用户输入的游戏idea,生成详实的游戏prompt"""
@@ -24,17 +34,8 @@ def generate_game_prompt(user_prompt):
         {"role": "user", "content": f"我的游戏idea是:{user_prompt},请你帮我丰富和填充这个idea,输出一个更加详实的游戏设计prompt。"}
     ]
     
-    model = "ollama:qwen2.5" 
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.7,
-    )
-    
-    if response.choices:
-        return response.choices[0].message.content.strip()
-    else:
-        return "游戏prompt生成失败,没有返回结果。"
+    response = call_ollama(messages, temperature=0.7)
+    return response if response else "游戏prompt生成失败,没有返回结果。"
 
 def generate_game_code(game_prompt):
     """根据详实的游戏prompt,生成对应的Python游戏代码"""
@@ -43,17 +44,8 @@ def generate_game_code(game_prompt):
         {"role": "user", "content": f"游戏设计prompt:{game_prompt},请你根据这个prompt,用Python编写一个简单的游戏Demo。"}
     ]
     
-    model = "Ollama:qwen2.5"
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.2,
-    )
-    
-    if response.choices:
-        return response.choices[0].message.content.strip() 
-    else:
-        return "游戏代码生成失败,没有返回结果。"
+    response = call_ollama(messages, temperature=0.2)
+    return response if response else "游戏代码生成失败,没有返回结果。"
 
 def main():
     print("欢迎使用游戏生成器!")
@@ -75,7 +67,7 @@ def main():
             print(f"生成的游戏代码如下:\n{game_code}")
             
             filename = f"game_{datetime.now().strftime('%m%d%H%M%S')}.py"
-            with open(filename, 'w') as f:
+            with open(filename, 'w', encoding='utf-8') as f:
                 f.write(game_code)
             print(f"游戏代码已保存至:{filename}")
         else:
